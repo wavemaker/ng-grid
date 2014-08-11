@@ -199,7 +199,7 @@ ngGridFilters.filter('ngColumns', function() {
         });
     };
 });
-angular.module('ngGrid.services').factory('$domUtilityService',['$utilityService', '$window', function($utils, $window) {
+angular.module('ngGrid.services').factory('$domUtilityService',['$utilityService', '$window', '$timeout', function($utils, $window, $timeout) {
     var domUtilityService = {};
     var regexCache = {};
     var getWidths = function() {
@@ -348,7 +348,8 @@ angular.module('ngGrid.services').factory('$domUtilityService',['$utilityService
 
     domUtilityService.digest = function($scope) {
         if (!$scope.$root.$$phase) {
-            $scope.$digest();
+            $timeout.cancel($scope.__digestTimeout);
+            $scope.__digestTimeout = $timeout($scope.$digest.bind($scope), 50, false);
         }
     };
     domUtilityService.ScrollH = 17; 
@@ -930,7 +931,7 @@ ngDomAccessProvider.prototype.selectionHandlers = function ($scope, elm) {
     });
 };
 var ngEventProvider = function (grid, $scope, domUtilityService, $timeout) {
-    var self = this;
+    var self = this, colsTimeout;
     self.colToMove = undefined;
     self.groupToMove = undefined;
     self.assignEvents = function() {
@@ -975,7 +976,8 @@ var ngEventProvider = function (grid, $scope, domUtilityService, $timeout) {
         }
 
         $scope.$on('$destroy', $scope.$watch('renderedColumns', function() {
-            $timeout(self.setDraggables);
+            $timeout.cancel(colsTimeout);
+            colsTimeout = $timeout(self.setDraggables, 100, false);
         }));
     };
     self.dragStart = function(evt){
@@ -3198,7 +3200,7 @@ ngGridDirectives.directive('ngRow', ['$compile', '$domUtilityService', '$templat
     };
     return ngRow;
 }]);
-ngGridDirectives.directive('ngViewport', [function() {
+ngGridDirectives.directive('ngViewport', ['$timeout', function($timeout) {
     return function($scope, elm) {
         var isMouseWheelActive;
         var prevScollLeft;
@@ -3208,7 +3210,7 @@ ngGridDirectives.directive('ngViewport', [function() {
                 $scope.$digest();
             }
         };
-        var scrollTimer;
+        var scrollTimer, __delayscroll;
 
         function scroll (evt) {
             var scrollLeft = evt.target.scrollLeft,
@@ -3230,7 +3232,10 @@ ngGridDirectives.directive('ngViewport', [function() {
             return true;
         }
 
-        elm.bind('scroll', scroll);
+        elm.bind('scroll', function (evt) {
+            $timeout.cancel(__delayscroll);
+            __delayscroll = $timeout(scroll.bind(undefined, evt), 50, false);
+        });
 
         function mousewheel() {
             isMouseWheelActive = true;
