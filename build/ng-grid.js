@@ -236,6 +236,9 @@ angular.module('ngGrid.services').factory('$domUtilityService',['$utilityService
         });
 
         $scope.$on('$destroy', function() {
+            //wavemaker: cancel the __digestTimout on scope destory.
+            //error occurs when delayed function is executed after scope destroy
+            $timeout.cancel($scope.__digestTimeout);
             if(grid.$root) {
                 $(grid.$root.parent()).off('resize.nggrid');
 
@@ -348,6 +351,7 @@ angular.module('ngGrid.services').factory('$domUtilityService',['$utilityService
 
     domUtilityService.digest = function($scope) {
         if (!$scope.$root.$$phase) {
+            //wavemaker: delay the execution of $digest by 50ms.
             $timeout.cancel($scope.__digestTimeout);
             $scope.__digestTimeout = $timeout($scope.$digest.bind($scope), 50, false);
         }
@@ -975,7 +979,15 @@ var ngEventProvider = function (grid, $scope, domUtilityService, $timeout) {
             });
         }
 
+        //wavemaker: cancel the colsTimeout on scope destory.
+        //error occurs when delayed function is executed after scope destroy
+
+        $scope.$on('$destroy', function () {
+            $timeout.cancel(colsTimeout);
+        });
+
         $scope.$on('$destroy', $scope.$watch('renderedColumns', function() {
+            //wavemaker: delay the execution of setDraggables by 100ms.
             $timeout.cancel(colsTimeout);
             colsTimeout = $timeout(self.setDraggables, 100, false);
         }));
@@ -3232,6 +3244,7 @@ ngGridDirectives.directive('ngViewport', ['$timeout', function($timeout) {
             return true;
         }
 
+        //wavemaker: delay the execution of scroll handler by 50ms
         elm.bind('scroll', function (evt) {
             $timeout.cancel(__delayscroll);
             __delayscroll = $timeout(scroll.bind(undefined, evt), 50, false);
@@ -3246,6 +3259,9 @@ ngGridDirectives.directive('ngViewport', ['$timeout', function($timeout) {
         elm.bind("mousewheel DOMMouseScroll", mousewheel);
 
         elm.on('$destroy', function() {
+            //wavemaker: cancel the __delayscroll on scope destory.
+            //error occurs when delayed function is executed after scope destroy
+            $timeout.cancel(__delayscroll);
             elm.off('scroll', scroll);
             elm.off('mousewheel DOMMouseScroll', mousewheel);
         });
