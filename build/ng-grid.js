@@ -236,6 +236,7 @@ angular.module('ngGrid.services').factory('$domUtilityService',['$utilityService
         });
 
         $scope.$on('$destroy', function() {
+            $timeout.cancel($scope.__digestTimeout);
             if(grid.$root) {
                 $(grid.$root.parent()).off('resize.nggrid');
 
@@ -974,6 +975,10 @@ var ngEventProvider = function (grid, $scope, domUtilityService, $timeout) {
                 grid.$topPanel = null;
             });
         }
+
+        $scope.$on('$destroy', function () {
+            $timeout.cancel(colsTimeout);
+        });
 
         $scope.$on('$destroy', $scope.$watch('renderedColumns', function() {
             $timeout.cancel(colsTimeout);
@@ -3246,6 +3251,7 @@ ngGridDirectives.directive('ngViewport', ['$timeout', function($timeout) {
         elm.bind("mousewheel DOMMouseScroll", mousewheel);
 
         elm.on('$destroy', function() {
+            $timeout.cancel(__delayscroll);
             elm.off('scroll', scroll);
             elm.off('mousewheel DOMMouseScroll', mousewheel);
         });
