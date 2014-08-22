@@ -1485,6 +1485,7 @@ var ngGrid = function ($scope, options, sortService, domUtilityService, $filter,
                     $scope.configGroups.splice(indx, 0, column);
                     column.groupIndex = $scope.configGroups.length;
                 }
+                //wavemaker: retain the modified column widths on navigation
                 if ($scope.hasUserChangedGridColumnWidths) {
                     column.width = $scope.columns[i].width;
                 }
