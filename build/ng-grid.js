@@ -1526,7 +1526,8 @@ var ngGrid = function ($scope, options, sortService, domUtilityService, $filter,
                 isPercent = isNaN(colDef.width) ? $utils.endsWith(colDef.width, "%") : false;
                 t = isPercent ? colDef.width : parseInt(colDef.width, 10);
             }
-            if (isNaN(t)) {
+            //wavemaker: retain the widths of resized columns
+            if (isNaN(t) && !$scope.hasUserChangedGridColumnWidths) {
                 t = colDef.width;
                 if (t === 'auto') { 
                     ngColumn.width = ngColumn.minWidth;
