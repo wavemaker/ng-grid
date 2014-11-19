@@ -1464,6 +1464,8 @@ var ngGrid = function ($scope, options, sortService, domUtilityService, $filter,
             var checkboxOffset = self.config.showSelectionCheckbox ? 1 : 0;
             var groupOffset = $scope.configGroups.length;
             $scope.configGroups.length = 0;
+            var lastSortedColName = self.lastSortedColumns && self.lastSortedColumns[0] && self.lastSortedColumns[0].displayName;
+
             angular.forEach(columnDefs, function(colDef, i) {
                 i += checkboxOffset;
                 var column = new ngColumn({
@@ -1489,6 +1491,11 @@ var ngGrid = function ($scope, options, sortService, domUtilityService, $filter,
                 //wavemaker: retain the modified column widths on navigation
                 if ($scope.hasUserChangedGridColumnWidths) {
                     column.width = $scope.columns[i].width;
+                }
+
+                //wavemaker: reatin the sorting info
+                if (lastSortedColName === column.displayName) {
+                    column.sortDirection = self.lastSortedColumns[0].sortDirection;
                 }
 
                 cols.push(column);
